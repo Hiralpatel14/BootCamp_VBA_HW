@@ -1,0 +1,127 @@
+Option Explicit
+
+Sub totalStockCal()
+    
+    Dim ws As Worksheet
+    Dim i As Long
+        
+    'loop through all the worksheets
+    For Each ws In Worksheets
+        ws.Activate
+        
+        'set header column for summary table
+        Range("I1").Value = "Ticker"
+        Range("J1").Value = "Yearly Change"
+        Range("K1").Value = "Percent Change"
+        Range("L1").Value = "Total Stock Volumn"
+        Range("J:L").EntireColumn.AutoFit
+               
+        
+        'Set initial value for ticker and total Stock volumn
+        
+        Dim ticker As String
+        Dim dbltotal_StockVol As Double
+        
+        dbltotal_StockVol = 0
+        
+        'set for open year date
+        Dim open_Yr_date As Boolean
+        open_Yr_date = True
+        
+        'set initialize variable for opening & closing year price and yearly change
+        
+        Dim open_Yr_price As Double
+        
+        Dim close_Yr_price As Double
+        
+        Dim yearly_change As Double
+        
+        'set initialize variable for percent change
+        Dim percent_change As Double
+          
+         
+        'Keep track of location of each ticker in summary table
+        
+        Dim summary_TickRow As Integer
+        summary_TickRow = 2
+        
+        'Set initialize for last Row
+        Dim lastRow As Long
+        
+        'count the number of rows in each sheet
+        lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+                
+                
+        'loop through all ticker
+        For i = 2 To lastRow
+            
+            'check same ticker or if not.
+            If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+                
+                ticker = Cells(i, 1).Value
+                
+                dbltotal_StockVol = dbltotal_StockVol + Cells(i, 7).Value
+                
+                'for yearly change from open and closing price at year end
+         
+                close_Yr_price = Cells(i, 6).Value
+                yearly_change = close_Yr_price - open_Yr_price
+                
+                'for percent change from open and closing price at year open and close
+                percent_change = (yearly_change / open_Yr_price) * 1
+    
+                 
+                'put/print ticker,total Stock Volume,yearly change,percent change in summaryTable
+                
+                Range("I" & summary_TickRow).Value = ticker                 'concate column name and no
+                
+                Range("J" & summary_TickRow).Value = yearly_change
+                
+                Range("K" & summary_TickRow).Value = percent_change
+                Range("K" & summary_TickRow).NumberFormat = "0.00%"
+                                
+                Range("L" & summary_TickRow).Value = dbltotal_StockVol
+                
+                
+                
+                'conditional formating for +ve change in green and -ve change in red
+                
+                If Range("J" & summary_TickRow).Value > 0 Then
+                
+                    Range("J" & summary_TickRow).Interior.ColorIndex = 4
+                Else
+                    Range("J" & summary_TickRow).Interior.ColorIndex = 3
+                End If
+        
+                
+                'adding up one to the summary table row
+                summary_TickRow = summary_TickRow + 1
+                
+                'reset total Stock
+                dbltotal_StockVol = 0
+           
+                
+                'set year-date to true
+                open_Yr_date = True
+                                
+            Else
+            
+                'if same ticker add to total stock volumn
+                dbltotal_StockVol = dbltotal_StockVol + Cells(i, 7).Value
+                
+                          
+                'get price for opened year stock
+                If open_Yr_date And Cells(i, 3).Value <> 0 Then
+                    
+                    open_Yr_price = Cells(i, 3).Value
+
+                     open_Yr_date = False
+                    
+                End If
+                
+            End If
+        
+        Next i
+        
+    Next ws
+End Sub
